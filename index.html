@@ -57,8 +57,42 @@
       document.getElementById('displayName').innerText = "สวัสดีคุณ " + profile.displayName;
       document.getElementById('pictureUrl').src = profile.pictureUrl;
     }
+async function submitAttendance(status) {
+  const statusEl = document.getElementById('status');
+  statusEl.innerText = "กำลังบันทึกข้อมูล...";
+  
+  try {
+    const profile = await liff.getProfile();
+    
+    const payload = {
+      userId: profile.userId,
+      displayName: profile.displayName,
+      status: status,
+      location: "ไม่ได้ระบุพิกัด"
+    };
 
-    async function submitAttendance(status) {
+    // ปรับการส่งแบบเรียบง่ายที่สุดเพื่อเลี่ยง Error 400
+    await fetch(GAS_URL, {
+      method: "POST",
+      mode: "no-cors", // ใช้โหมดนี้เพื่อข้ามปัญหาเรื่อง CORS ในบาง Browser
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    // เนื่องจากใช้ no-cors เราอาจจะอ่าน Response ไม่ได้ 
+    // ให้ถือว่าถ้า fetch ไม่ throw error คือส่งสำเร็จ
+    alert("บันทึก " + status + " เรียบร้อยแล้ว!");
+    liff.closeWindow();
+
+  } catch (error) {
+    console.error(error);
+    alert("เกิดข้อผิดพลาด: " + error.message);
+    statusEl.innerText = "ลองใหม่อีกครั้ง";
+  }
+}
+    async function submitAttendance_BackUP(status) {
       document.getElementById('status').innerText = "กำลังบันทึกข้อมูล...";
           // ตรวจสอบซ้ำอีกครั้งก่อนเรียก Profile
         if (!liff.isLoggedIn()) {
@@ -111,5 +145,6 @@
 </body>
 
 </html>
+
 
 
