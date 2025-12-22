@@ -31,13 +31,25 @@
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbzOkduQ-qtV9afqh-ghoLElGsTl7mxD6MtAyrY9-Rc1ZwjUF7cLF-m3vHIaBya630YTsw/exec';
 
     async function main() {
-      await liff.init({ liffId: LIFF_ID });
-      if (liff.isLoggedIn()) {
+    try {
+        // 1. รอให้ liff.init สำเร็จก่อนทำขั้นตอนอื่น
+        await liff.init({ liffId: LIFF_ID });
+
+        // 2. เช็คว่า Login หรือยัง ถ้ายังให้ Login ก่อน
+        if (!liff.isLoggedIn()) {
+            console.log("Not logged in, logging in now...");
+            liff.login(); 
+            return; // หยุดการทำงานตรงนี้จนกว่าจะ Login เสร็จ
+        }
+
+        // 3. เมื่อ Login แล้วค่อยดึง Profile
         getUserProfile();
-      } else {
-        liff.login();
+
+        } catch (error) {
+        console.error("LIFF Initialization failed", error);
+        document.getElementById('status').innerText = "เกิดข้อผิดพลาดในการโหลดระบบ";
       }
-    }
+      }    
 
     async function getUserProfile() {
       const profile = await liff.getProfile();
@@ -47,8 +59,19 @@
 
     async function submitAttendance(status) {
       document.getElementById('status').innerText = "กำลังบันทึกข้อมูล...";
-      
+          // ตรวจสอบซ้ำอีกครั้งก่อนเรียก Profile
+        if (!liff.isLoggedIn()) {
+            liff.login();
+            return;
+        }
       try {
+
+        // ดึง Access Token มาตรวจสอบ (Optional: เพื่อความมั่นใจว่า API พร้อม)
+        const token = liff.getAccessToken();
+        if (!token) {
+            alert("ไม่พบ Access Token กรุณาลองใหม่อีกครั้ง");
+            return;
+        }
         const profile = await liff.getProfile();
         
         // ดึงตำแหน่งพิกัด (ต้องเปิดสิทธิ์ใน LINE Developers ด้วย)
@@ -85,4 +108,5 @@
     main();
   </script>
 </body>
+
 </html>
