@@ -112,9 +112,9 @@ async function submitAttendance_BackUp(status) {
         // ดึงตำแหน่งพิกัด (ต้องเปิดสิทธิ์ใน LINE Developers ด้วย)
         // หากไม่ใช้ GPS ให้เอาส่วนนี้ออกแล้วส่งค่าว่างไปแทนได้ครับ
         let locationStr = "ไม่ได้ระบุพิกัด";
-        /* const location = await liff.getLocation(); // ต้องใช้ liff.init ที่เปิดสิทธิ์ location
+        const location = await liff.getLocation(); // ต้องใช้ liff.init ที่เปิดสิทธิ์ location
         locationStr = `${location.latitude}, ${location.longitude}`;
-        */
+        
 
         const payload = {
           userId: profile.userId,
@@ -145,6 +145,7 @@ async function submitAttendance_BackUp(status) {
 </body>
 
 </html>
+
 
 
 
