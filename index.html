@@ -57,7 +57,7 @@
       document.getElementById('displayName').innerText = "สวัสดีคุณ " + profile.displayName;
       document.getElementById('pictureUrl').src = profile.pictureUrl;
     }
-async function submitAttendance(status) {
+async function submitAttendance_BackUp(status) {
   const statusEl = document.getElementById('status');
   statusEl.innerText = "กำลังบันทึกข้อมูล...";
   
@@ -92,7 +92,7 @@ async function submitAttendance(status) {
     statusEl.innerText = "ลองใหม่อีกครั้ง";
   }
 }
-    async function submitAttendance_BackUP(status) {
+    async function submitAttendance(status) {
       document.getElementById('status').innerText = "กำลังบันทึกข้อมูล...";
           // ตรวจสอบซ้ำอีกครั้งก่อนเรียก Profile
         if (!liff.isLoggedIn()) {
@@ -145,6 +145,7 @@ async function submitAttendance(status) {
 </body>
 
 </html>
+
 
 
 
