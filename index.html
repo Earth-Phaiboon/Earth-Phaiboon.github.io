@@ -3,151 +3,114 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบลงเวลาพนักงาน</title>
+  <title>ลงเวลาเข้างานกลุ่มบริษัท</title>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4; }
-    .btn { width: 80%; padding: 20px; margin: 10px; font-size: 18px; border: none; border-radius: 10px; color: white; cursor: pointer; }
-    .btn-in { background-color: #28a745; }
-    .btn-out { background-color: #dc3545; }
-    #status { margin-top: 20px; color: #666; }
+    body { font-family: 'Kanit', sans-serif; text-align: center; padding: 20px; background: #f0f2f5; }
+    .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .btn { width: 100%; padding: 15px; margin: 10px 0; font-size: 1.2rem; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; }
+    .btn-in { background: #28a745; }
+    #status-msg { color: #666; font-size: 0.9rem; margin-top: 10px; }
   </style>
 </head>
 <body>
 
-  <h2>ลงเวลาเข้า-ออกงาน</h2>
-  <div id="userProfile">
-    <img id="pictureUrl" width="100" style="border-radius: 50%;">
-    <p id="displayName">กำลังโหลดข้อมูล...</p>
-  </div>
+<div class="card">
+  <img id="userImg" width="80" style="border-radius: 50%; display: none;">
+  <h2 id="userName">กำลังโหลดข้อมูล...</h2>
+  <hr>
+  <button class="btn btn-in" onclick="processAttendance('เข้างาน')">ลงเวลาเข้างาน</button>
+  <button class="btn" style="background:#dc3545" onclick="processAttendance('ออกงาน')">ลงเวลาออกงาน</button>
+  <p id="status-msg">กรุณารอสักครู่...</p>
+</div>
 
-  <button class="btn btn-in" onclick="submitAttendance('เข้างาน')">ลงเวลาเข้างาน</button>
-  <button class="btn btn-out" onclick="submitAttendance('ออกงาน')">ลงเวลาออกงาน</button>
+<script>
+const LIFF_ID =  '2008726712-TyWc8pGY';//ใส่_LIFF_ID_ที่นี่
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwScqndeFMCNOuD_7CcIlDLOqv2a0QRGl0mqBsnYIHvnHYPPzAnQm6ftmTh3NTo11dn/exec';//ใส่_GAS_URL_ที่นี่
+const OFFICE_LAT = 16.4408616; // ใส่ละติจูดบริษัท
+const OFFICE_LNG = 100.3237274; // ใส่ลองจิจูดบริษัท
+const ALLOWED_DISTANCE = 200; // อนุญาตในรัศมี 200 เมตร
 
-  <p id="status"></p>
-
-  <script>
-    const LIFF_ID = '2008726712-TyWc8pGY'; 
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbxr33fZRUKa54-0Jr6VOfQwfISvS6_fVlrCDO1XxDm7KSPp6UiqlQY0TjGx3gEThQolng/exec';
-                     
-
-    async function main() {
-    try {
-        // 1. รอให้ liff.init สำเร็จก่อนทำขั้นตอนอื่น
-        await liff.init({ liffId: LIFF_ID });
-
-        // 2. เช็คว่า Login หรือยัง ถ้ายังให้ Login ก่อน
-        if (!liff.isLoggedIn()) {
-            console.log("Not logged in, logging in now...");
-            liff.login(); 
-            return; // หยุดการทำงานตรงนี้จนกว่าจะ Login เสร็จ
-        }
-
-        // 3. เมื่อ Login แล้วค่อยดึง Profile
-        getUserProfile();
-
-        } catch (error) {
-        console.error("LIFF Initialization failed", error);
-        document.getElementById('status').innerText = "เกิดข้อผิดพลาดในการโหลดระบบ";
-      }
-      }    
-
-    async function getUserProfile() {
-      const profile = await liff.getProfile();
-      document.getElementById('displayName').innerText = "สวัสดีคุณ " + profile.displayName;
-      document.getElementById('pictureUrl').src = profile.pictureUrl;
-    }
-async function submitAttendance_BackUp(status) {
-  const statusEl = document.getElementById('status');
-  statusEl.innerText = "กำลังบันทึกข้อมูล...";
-  
+async function main() {
   try {
-    const profile = await liff.getProfile();
-    
-    const payload = {
-      userId: profile.userId,
-      displayName: profile.displayName,
-      status: status,
-      location: "ไม่ได้ระบุพิกัด"
-    };
-
-    // ปรับการส่งแบบเรียบง่ายที่สุดเพื่อเลี่ยง Error 400
-    await fetch(GAS_URL, {
-      method: "POST",
-      mode: "no-cors", // ใช้โหมดนี้เพื่อข้ามปัญหาเรื่อง CORS ในบาง Browser
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    // เนื่องจากใช้ no-cors เราอาจจะอ่าน Response ไม่ได้ 
-    // ให้ถือว่าถ้า fetch ไม่ throw error คือส่งสำเร็จ
-    alert("บันทึก " + status + " เรียบร้อยแล้ว!");
-    liff.closeWindow();
-
-  } catch (error) {
-    console.error(error);
-    alert("เกิดข้อผิดพลาด: " + error.message);
-    statusEl.innerText = "ลองใหม่อีกครั้ง";
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) {
+      liff.login();
+    } else {
+      const profile = await liff.getProfile();
+      document.getElementById('userName').innerText = "สวัสดี " + profile.displayName;
+      document.getElementById('userImg').src = profile.pictureUrl;
+      document.getElementById('userImg').style.display = 'inline-block';
+      document.getElementById('status-msg').innerText = "ระบบพร้อมใช้งาน";
+    }
+  } catch (err) {
+    document.getElementById('status-msg').innerText = "Init Error: " + err.message;
   }
 }
-    async function submitAttendance(status) {
-      document.getElementById('status').innerText = "กำลังบันทึกข้อมูล...";
-          // ตรวจสอบซ้ำอีกครั้งก่อนเรียก Profile
-        if (!liff.isLoggedIn()) {
-            liff.login();
-            return;
-        }
-      try {
 
-        // ดึง Access Token มาตรวจสอบ (Optional: เพื่อความมั่นใจว่า API พร้อม)
-        const token = liff.getAccessToken();
-        if (!token) {
-            alert("ไม่พบ Access Token กรุณาลองใหม่อีกครั้ง");
-            return;
-        }
-        const profile = await liff.getProfile();
-        
-        // ดึงตำแหน่งพิกัด (ต้องเปิดสิทธิ์ใน LINE Developers ด้วย)
-        // หากไม่ใช้ GPS ให้เอาส่วนนี้ออกแล้วส่งค่าว่างไปแทนได้ครับ
-        let locationStr = "ไม่ได้ระบุพิกัด";
-        const location = await liff.getLocation(); // ต้องใช้ liff.init ที่เปิดสิทธิ์ location
-        locationStr = `${location.latitude}, ${location.longitude}`;
-        
+// ฟังก์ชันคำนวณระยะห่าง (เมตร)
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; 
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
 
-        const payload = {
-          userId: profile.userId,
-          displayName: profile.displayName,
-          status: status,
-          location: locationStr
-        };
+async function processAttendance(status) {
+  const msgEl = document.getElementById('status-msg');
+  msgEl.innerText = "กำลังตรวจเช็คพิกัด...";
 
-        const response = await fetch(GAS_URL, {
-          method: "POST",
-          body: JSON.stringify(payload)
-        });
+  try {
+    // 1. ดึงตำแหน่งพิกัด
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const uLat = pos.coords.latitude;
+      const uLng = pos.coords.longitude;
+      const distance = getDistance(uLat, uLng, OFFICE_LAT, OFFICE_LNG);
 
-        const result = await response.json();
-        if (result.result === "success") {
-          alert("บันทึก " + status + " สำเร็จ!");
-          liff.closeWindow(); // ปิดหน้าต่างทันทีเมื่อเสร็จ
-        } else {
-          alert("เกิดข้อผิดพลาด: " + result.message);
-        }
-      } catch (error) {
-        alert("Error: " + error.message);
+      // 2. ตรวจสอบระยะทาง
+      if (distance > ALLOWED_DISTANCE) {
+        alert(`คุณอยู่นอกพื้นที่บริษัท! (ระยะห่าง ${Math.round(distance)} ม.)`);
+        msgEl.innerText = "ลงเวลาไม่สำเร็จ: นอกพื้นที่";
+        return;
       }
-    }
 
-    main();
-  </script>
+      // 3. ส่งข้อมูลไป Google Sheets
+      msgEl.innerText = "กำลังบันทึกข้อมูล...";
+      const profile = await liff.getProfile();
+      const payload = {
+        userId: profile.userId,
+        displayName: profile.displayName,
+        status: status,
+        distance: Math.round(distance),
+        location: `${uLat},${uLng}`
+      };
+
+      await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+
+      // 4. ส่งข้อความยืนยันลงในแชทกลุ่ม (ถ้าเปิดผ่านกลุ่ม)
+      if (liff.getContext().type !== 'none') {
+        await liff.sendMessages([{
+          type: 'text',
+          text: `📍 ${profile.displayName} ได้ลงเวลา "${status}" เรียบร้อยแล้ว\nห่างจากจุดเช็คอิน ${Math.round(distance)} เมตร`
+        }]);
+      }
+
+      alert("บันทึกข้อมูลสำเร็จ!");
+      liff.closeWindow();
+
+    }, (err) => {
+      alert("กรุณาเปิด GPS และอนุญาตให้เข้าถึงตำแหน่ง");
+    });
+  } catch (err) {
+    alert("เกิดข้อผิดพลาด: " + err.message);
+  }
+}
+
+main();
+</script>
 </body>
-
 </html>
-
-
-
-
-
-
