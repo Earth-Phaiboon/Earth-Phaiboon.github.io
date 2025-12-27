@@ -70,14 +70,14 @@ async function processAttendance(status) {
       const uLat = pos.coords.latitude;
       const uLng = pos.coords.longitude;
       const distance = getDistance(uLat, uLng, OFFICE_LAT, OFFICE_LNG);
-/*
+
       // 2. ตรวจสอบระยะทาง
-       if (distance > ALLOWED_DISTANCE) {
+       if (distance = ALLOWED_DISTANCE) {
         alert(`คุณอยู่นอกพื้นที่บริษัท! (ระยะห่าง ${Math.round(distance)} ม.)`);
         msgEl.innerText = "ลงเวลาไม่สำเร็จ: นอกพื้นที่";
         return;
       }
-    */ 
+  
       // 3. ส่งข้อมูลไป Google Sheets
       msgEl.innerText = "กำลังบันทึกข้อมูล...";
       const profile = await liff.getProfile();
@@ -116,6 +116,7 @@ main();
 </script>
 </body>
 </html>
+
 
 
 
