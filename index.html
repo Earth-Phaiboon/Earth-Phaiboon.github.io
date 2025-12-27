@@ -72,7 +72,7 @@ async function processAttendance(status) {
       const distance = getDistance(uLat, uLng, OFFICE_LAT, OFFICE_LNG);
 
       // 2. ตรวจสอบระยะทาง
-       if (distance = ALLOWED_DISTANCE) {
+       if (distance > ALLOWED_DISTANCE) {
         alert(`คุณอยู่นอกพื้นที่บริษัท! (ระยะห่าง ${Math.round(distance)} ม.)`);
         msgEl.innerText = "ลงเวลาไม่สำเร็จ: นอกพื้นที่";
         return;
@@ -116,6 +116,7 @@ main();
 </script>
 </body>
 </html>
+
 
 
 
