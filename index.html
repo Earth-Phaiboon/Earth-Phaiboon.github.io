@@ -34,17 +34,32 @@ const ALLOWED_DISTANCE = 200; // อนุญาตในรัศมี 200 เ
 async function main() {
   try {
     await liff.init({ liffId: LIFF_ID });
+    
+    // ตรวจสอบว่ามี Token ที่ใช้งานได้จริงไหม
     if (!liff.isLoggedIn()) {
       liff.login();
     } else {
-      const profile = await liff.getProfile();
-      document.getElementById('userName').innerText = "สวัสดี " + profile.displayName;
-      document.getElementById('userImg').src = profile.pictureUrl;
-      document.getElementById('userImg').style.display = 'inline-block';
-      document.getElementById('status-msg').innerText = "ระบบพร้อมใช้งาน";
+      try {
+        const profile = await liff.getProfile();
+        document.getElementById('userName').innerText = "สวัสดี " + profile.displayName;
+        document.getElementById('userImg').src = profile.pictureUrl;
+        document.getElementById('userImg').style.display = 'inline-block';
+        document.getElementById('status-msg').innerText = "ระบบพร้อมใช้งาน";
+      } catch (profileError) {
+        // หาก getProfile พังเพราะ Token ถูก Revoke ให้ Logout แล้ว Login ใหม่
+        console.error("Token error, logging out...");
+        liff.logout();
+        liff.login();
+      }
     }
   } catch (err) {
-    document.getElementById('status-msg').innerText = "Init Error: " + err.message;
+    console.error("Init Error:", err);
+    // หากเกิด Error เรื่อง Access Token ตอน Init ให้ลอง Login ใหม่
+    if (err.message.includes("revoked")) {
+      liff.login();
+    } else {
+      document.getElementById('status-msg').innerText = "Init Error: " + err.message;
+    }
   }
 }
 
@@ -195,6 +210,7 @@ main();
 </script>
 </body>
 </html>
+
 
 
 
