@@ -155,11 +155,8 @@ async function processAttendance(status) {
 };
 
         try {
-          await liff.sendMessages([{
-            type: 'text',
-            text: `ทดสอบส่งข้อความจาก: ${profile.displayName}`
-          }]);
-          //await liff.sendMessages([flexMessage]);
+          
+          await liff.sendMessages([flexMessage]);
         } catch (e) {
           console.error("Flex Message Error:", e);
           alert("ไม่สามารถส่ง Flex ได้: " + e.message); // จะแจ้งเตือนถ้าลืมเปิด Scopes
@@ -189,6 +186,7 @@ main();
 </script>
 </body>
 </html>
+
 
 
 
