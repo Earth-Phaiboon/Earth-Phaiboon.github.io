@@ -79,6 +79,7 @@ async function processAttendance(status) {
       }
       */
       // 3. ส่งข้อมูลไป Google Sheets
+      /*
       msgEl.innerText = "กำลังบันทึกข้อมูล...";
       const profile = await liff.getProfile();
       const payload = {
@@ -90,6 +91,7 @@ async function processAttendance(status) {
       };
 
       await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+      */
 
       // 4. ส่งข้อความยืนยันลงในแชทกลุ่ม (ถ้าเปิดผ่านกลุ่ม)
       if (liff.getContext().type !== 'none') {
@@ -238,14 +240,27 @@ async function processAttendance(status) {
         }
       }
     };
-    await liff.sendMessages([flexMessage]);
-
+        try{
+        await liff.sendMessages([flexMessage]);
+        }catch(e){
+          console.log("ส่งข้อความไม่สำเร็จ แต่จะบันทึกข้อมูลต่อ:", e);
+      }
       }
 
-      // 4. ส่ง Flex Message ยืนยันลงในแชทกลุ่ม (ถ้าเปิดผ่านกลุ่ม)
-
-      alert("บันทึกข้อมูลสำเร็จ!");
+    
+// -ส่งข้อมูลไป Google Sheets (ใช้ Fetch แบบไม่รอผลลัพธ์มากเกินไป) ---
+    msgEl.innerText = "กำลังบันทึกข้อมูลลงฐานข้อมูล...";
+    fetch(GAS_URL, {
+      method: "POST",
+      body: JSON.stringify(payload),
+      mode: 'no-cors' // ใช้โหมดนี้เพื่อกัน Error 400 แต่จะไม่ได้รับค่าตอบกลับ
+    });
+      
+     // --- ส่วนที่ 3: ปิดหน้าจอทันที ---
+    msgEl.innerText = "บันทึกสำเร็จ!";
+    setTimeout(() => {
       liff.closeWindow();
+    }, 1000); // หน่วงเวลา 1 วินาทีเพื่อให้ผู้ใช้เห็นว่าสำเร็จ
 
     }, (err) => {
       alert("กรุณาเปิด GPS และอนุญาตให้เข้าถึงตำแหน่ง");
@@ -259,6 +274,7 @@ main();
 </script>
 </body>
 </html>
+
 
 
 
