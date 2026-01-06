@@ -65,7 +65,6 @@ async function processAttendance(status) {
   msgEl.innerText = "กำลังตรวจเช็คพิกัด...";
 
   try {
-    // 1. ดึงตำแหน่งพิกัด
     navigator.geolocation.getCurrentPosition(async (pos) => {
       const uLat = pos.coords.latitude;
       const uLng = pos.coords.longitude;
@@ -73,212 +72,119 @@ async function processAttendance(status) {
 
       const profile = await liff.getProfile();
       const context = liff.getContext();
-    
-    // เตรียมข้อมูล
-      const payload = {
-      userId: profile.userId,
-      displayName: profile.displayName,
-      status: status,
-      location: `${uLat},${uLng}` // ใส่พิกัดที่ดึงมา
-    };
       
-      /*
-      // 2. ตรวจสอบระยะทาง
-       if (distance > ALLOWED_DISTANCE) {
-        alert(`คุณอยู่นอกพื้นที่บริษัท! (ระยะห่าง ${Math.round(distance)} ม.)`);
-        msgEl.innerText = "ลงเวลาไม่สำเร็จ: นอกพื้นที่";
-        return;
-      }
-      */
-      
-      // 3. ส่งข้อมูลไป Google Sheets
-      /*
-      msgEl.innerText = "กำลังบันทึกข้อมูล...";
-      const profile = await liff.getProfile();
+      // ป้องกันรูปโปรไฟล์ว่าง (ถ้าไม่มีห้ใช้รูปว่างๆ แทน)
+      const userPicture = profile.pictureUrl || "https://img.icons8.com/bubbles/2x/user.png";
+
       const payload = {
         userId: profile.userId,
         displayName: profile.displayName,
         status: status,
-        distance: Math.round(distance),
-        location: `${uLat},${uLng}`
+        location: `${uLat},${uLng}`,
+        distance: Math.round(distance)
       };
 
-      await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-      */
-
- // --- ส่วนที่ 1: ส่งข้อความ Flex เข้ากลุ่มก่อน (เพราะทำได้ทันทีภายใน LINE) ---
-    msgEl.innerText = "กำลังส่งข้อความเข้ากลุ่ม...";
-     if (context.type !== 'none') {
-        /*
-        await liff.sendMessages([{
-          type: 'text',
-          text: `📍 ${profile.displayName} ได้ลงเวลา "${status}" เรียบร้อยแล้ว\nห่างจากจุดเช็คอิน ${Math.round(distance)} เมตร`
-        }]);
-        */
+      // --- ส่วนที่ 1: ส่ง Flex Message ---
+      if (liff.isInClient() && (context.type === 'group' || context.type === 'room' || context.type === 'utou')) {
+        msgEl.innerText = "กำลังส่งข้อความเข้ากลุ่ม...";
         const flexMessage = {
-      type: "flex",
-      altText: `${profile.displayName} ลงเวลา ${status} แล้ว!`, // ข้อความสั้นๆ ที่แสดงบน Notification
-      contents: {
-        "type": "bubble",
-        "hero": {
-          "type": "image",
-          "url": "https://img.freepik.com/free-vector/gradient-line-art-cityscape-background_52683-112396.jpg", // เปลี่ยนรูปภาพ Hero
-          "size": "full",
-          "aspectRatio": "20:13",
-          "aspectMode": "cover"
-        },
-        "body": {
-          "type": "box",
-          "layout": "vertical",
-          "contents": [
-            {
-              "type": "box",
-              "layout": "horizontal",
-              "contents": [
-                {
-                  "type": "image",
-                  "url": profile.pictureUrl, // รูปโปรไฟล์พนักงาน
-                  "size": "xxs",
-                  "aspectMode": "cover",
-                  "aspectRatio": "1:1",
-                  "gravity": "center",
-                  "flex": 0,
-                  "cornerRadius": "100px"
-                },
-                {
-                  "type": "text",
-                  "text": profile.displayName, // ชื่อพนักงาน
-                  "weight": "bold",
-                  "size": "lg",
-                  "flex": 5,
-                  "margin": "md",
-                  "align": "start"
-                }
-              ],
-              "spacing": "sm"
+          type: "flex",
+          altText: `${profile.displayName} ลงเวลา ${status} แล้ว!`,
+          contents: {
+            "type": "bubble",
+            "hero": {
+              "type": "image",
+              "url": "https://img.freepik.com/free-vector/gradient-line-art-cityscape-background_52683-112396.jpg",
+              "size": "full",
+              "aspectRatio": "20:13",
+              "aspectMode": "cover"
             },
-            {
+            "body": {
               "type": "box",
               "layout": "vertical",
-              "margin": "lg",
-              "spacing": "sm",
               "contents": [
                 {
                   "type": "box",
                   "layout": "horizontal",
                   "contents": [
                     {
-                      "type": "text",
-                      "text": "สถานะ:",
-                      "size": "sm",
-                      "color": "#555555",
-                      "flex": 2
+                      "type": "image",
+                      "url": userPicture,
+                      "size": "xxs",
+                      "aspectMode": "cover",
+                      "aspectRatio": "1:1",
+                      "gravity": "center",
+                      "flex": 0,
+                      "cornerRadius": "100px"
                     },
                     {
                       "type": "text",
-                      "text": status, // สถานะการลงเวลา
-                      "size": "sm",
-                      "color": "#111111",
+                      "text": profile.displayName,
+                      "weight": "bold",
+                      "size": "lg",
                       "flex": 5,
-                      "wrap": true
+                      "margin": "md"
                     }
                   ]
                 },
                 {
                   "type": "box",
-                  "layout": "horizontal",
+                  "layout": "vertical",
+                  "margin": "lg",
+                  "spacing": "sm",
                   "contents": [
                     {
-                      "type": "text",
-                      "text": "เวลา:",
-                      "size": "sm",
-                      "color": "#555555",
-                      "flex": 2
+                      "type": "box",
+                      "layout": "horizontal",
+                      "contents": [
+                        { "type": "text", "text": "สถานะ:", "size": "sm", "color": "#555555", "flex": 2 },
+                        { "type": "text", "text": status, "size": "sm", "color": "#111111", "flex": 5 }
+                      ]
                     },
                     {
-                      "type": "text",
-                      "text": new Date().toLocaleString('th-TH'), // เวลาที่ลง
-                      "size": "sm",
-                      "color": "#111111",
-                      "flex": 5,
-                      "wrap": true
-                    }
-                  ]
-                },
-                {
-                  "type": "box",
-                  "layout": "horizontal",
-                  "contents": [
-                    {
-                      "type": "text",
-                      "text": "ระยะห่าง:",
-                      "size": "sm",
-                      "color": "#555555",
-                      "flex": 2
+                      "type": "box",
+                      "layout": "horizontal",
+                      "contents": [
+                        { "type": "text", "text": "เวลา:", "size": "sm", "color": "#555555", "flex": 2 },
+                        { "type": "text", "text": new Date().toLocaleString('th-TH'), "size": "sm", "color": "#111111", "flex": 5 }
+                      ]
                     },
                     {
-                      "type": "text",
-                      "text": `${Math.round(distance)} เมตร`, // ระยะห่างจากออฟฟิศ
-                      "size": "sm",
-                      "color": "#111111",
-                      "flex": 5,
-                      "wrap": true
+                      "type": "box",
+                      "layout": "horizontal",
+                      "contents": [
+                        { "type": "text", "text": "ระยะห่าง:", "size": "sm", "color": "#555555", "flex": 2 },
+                        { "type": "text", "text": `${Math.round(distance)} เมตร`, "size": "sm", "color": "#111111", "flex": 5 }
+                      ]
                     }
                   ]
                 }
               ]
             }
-          ]
-        },
-        "footer": {
-          "type": "box",
-          "layout": "vertical",
-          "spacing": "sm",
-          "contents": [
-            {
-              "type": "button",
-              "style": "link",
-              "height": "sm",
-              "action": {
-                "type": "uri",
-                "label": "ดูรายงานทั้งหมด",
-                "uri": "ใส่_ลิงก์_Google_Sheet_Report_ของคุณ_ที่นี่" // ลิงก์ไปยัง Google Sheet ที่ดูข้อมูลได้
-              }
-            },
-            {
-              "type": "spacer",
-              "size": "sm"
-            }
-          ],
-          "flex": 0
+          }
+        };
+
+        try {
+          await liff.sendMessages([flexMessage]);
+        } catch (e) {
+          console.error("Flex Message Error:", e);
+          alert("ไม่สามารถส่ง Flex ได้: " + e.message); // จะแจ้งเตือนถ้าลืมเปิด Scopes
         }
       }
-    };
-        try{
-           msgEl.innerText = "กำลังแสดง Flex Message...";
-        await liff.sendMessages([flexMessage]);
-        }catch(e){
-          console.log("ส่งข้อความไม่สำเร็จ แต่จะบันทึกข้อมูลต่อ:", e);
-      }
-      }
 
-    
-// -ส่งข้อมูลไป Google Sheets (ใช้ Fetch แบบไม่รอผลลัพธ์มากเกินไป) ---
-    msgEl.innerText = "กำลังบันทึกข้อมูลลงฐานข้อมูล...";
-    fetch(GAS_URL, {
-      method: "POST",
-      body: JSON.stringify(payload),
-      mode: 'no-cors' // ใช้โหมดนี้เพื่อกัน Error 400 แต่จะไม่ได้รับค่าตอบกลับ
-    });
-      
-     // --- ส่วนที่ 3: ปิดหน้าจอทันที ---
-    msgEl.innerText = "บันทึกสำเร็จ!";
-    setTimeout(() => {
-      liff.closeWindow();
-    }, 1000); // หน่วงเวลา 1 วินาทีเพื่อให้ผู้ใช้เห็นว่าสำเร็จ
+      // --- ส่วนที่ 2: ส่งข้อมูลไป Google Sheets ---
+      msgEl.innerText = "กำลังบันทึกข้อมูล...";
+      await fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        mode: 'no-cors'
+      });
+
+      msgEl.innerText = "บันทึกสำเร็จ!";
+      setTimeout(() => { liff.closeWindow(); }, 1500);
 
     }, (err) => {
-      alert("กรุณาเปิด GPS และอนุญาตให้เข้าถึงตำแหน่ง");
+      alert("กรุณาเปิด GPS และอนุญาตสิทธิ์ตำแหน่งในมือถือ");
     });
   } catch (err) {
     alert("เกิดข้อผิดพลาด: " + err.message);
@@ -289,6 +195,7 @@ main();
 </script>
 </body>
 </html>
+
 
 
 
