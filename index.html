@@ -79,7 +79,7 @@ async function processAttendance(status) {
       userId: profile.userId,
       displayName: profile.displayName,
       status: status,
-      location: "..." // ใส่พิกัดที่ดึงมา
+      location: `${uLat},${uLng}` // ใส่พิกัดที่ดึงมา
     };
       
       /*
@@ -90,6 +90,7 @@ async function processAttendance(status) {
         return;
       }
       */
+      
       // 3. ส่งข้อมูลไป Google Sheets
       /*
       msgEl.innerText = "กำลังบันทึกข้อมูล...";
@@ -254,6 +255,7 @@ async function processAttendance(status) {
       }
     };
         try{
+           msgEl.innerText = "กำลังแสดง Flex Message...";
         await liff.sendMessages([flexMessage]);
         }catch(e){
           console.log("ส่งข้อความไม่สำเร็จ แต่จะบันทึกข้อมูลต่อ:", e);
@@ -287,6 +289,7 @@ main();
 </script>
 </body>
 </html>
+
 
 
 
