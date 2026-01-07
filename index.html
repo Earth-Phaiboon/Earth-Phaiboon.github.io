@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ลงเวลาเข้างานกลุ่มบริษัท</title>
+  <title>ลงเวลาทำงานร้าน BOOBUN Phit'lok</title>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body { font-family: 'Kanit', sans-serif; text-align: center; padding: 20px; background: #f0f2f5; }
@@ -28,7 +28,7 @@
 const LIFF_ID =  '2008726712-TyWc8pGY';//ใส่_LIFF_ID_ที่นี่
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwScqndeFMCNOuD_7CcIlDLOqv2a0QRGl0mqBsnYIHvnHYPPzAnQm6ftmTh3NTo11dn/exec';//ใส่_GAS_URL_ที่นี่
 const OFFICE_LAT = 16.4409792; // ใส่ละติจูดบริษัท
-const OFFICE_LNG = 100.326328; // ใส่ลองจิจูดบริษัท
+const OFFICE_LNG = 100.2679006; // ใส่ลองจิจูดบริษัท
 const ALLOWED_DISTANCE = 200; // อนุญาตในรัศมี 200 เมตร
 
 async function main() {
@@ -102,57 +102,145 @@ async function processAttendance(status) {
       // --- ส่วนที่ 1: ส่ง Flex Message ---
       if (liff.isInClient() && (context.type === 'group' || context.type === 'room' || context.type === 'utou')) {
         msgEl.innerText = "กำลังส่งข้อความเข้ากลุ่ม...";
-        const flexMessage = {
-  type: "flex",
-  altText: `📢 ${profile.displayName} ลงเวลา ${status} แล้ว`,
-  contents: {
-    "type": "bubble",
-    "body": {
-      "type": "box",
-      "layout": "vertical",
-      "contents": [
-        {
-          "type": "text",
-          "text": "บันทึกเวลาสำเร็จ",
-          "weight": "bold",
-          "color": "#1DB446",
-          "size": "sm"
+       const flexMessage = {
+      type: "flex",
+      altText: `${profile.displayName} ลงเวลา ${status} แล้ว!`, // ข้อความสั้นๆ ที่แสดงบน Notification
+      contents: {
+        "type": "bubble",
+        "hero": {
+          "type": "image",
+          "url": "https://img.freepik.com/free-vector/gradient-line-art-cityscape-background_52683-112396.jpg", // เปลี่ยนรูปภาพ Hero
+          "size": "full",
+          "aspectRatio": "20:13",
+          "aspectMode": "cover"
         },
-        {
-          "type": "text",
-          "text": profile.displayName,
-          "weight": "bold",
-          "size": "xxl",
-          "margin": "md"
-        },
-        {
+        "body": {
           "type": "box",
           "layout": "vertical",
-          "margin": "lg",
-          "spacing": "sm",
           "contents": [
             {
               "type": "box",
               "layout": "horizontal",
               "contents": [
-                { "type": "text", "text": "สถานะ", "color": "#aaaaaa", "size": "sm", "flex": 1 },
-                { "type": "text", "text": status, "wrap": true, "color": "#666666", "size": "sm", "flex": 4 }
-              ]
+                {
+                  "type": "image",
+                  "url": profile.pictureUrl, // รูปโปรไฟล์พนักงาน
+                  "size": "xxs",
+                  "aspectMode": "cover",
+                  "aspectRatio": "1:1",
+                  "gravity": "center",
+                  "flex": 0,
+                  "cornerRadius": "100px"
+                },
+                {
+                  "type": "text",
+                  "text": profile.displayName, // ชื่อพนักงาน
+                  "weight": "bold",
+                  "size": "lg",
+                  "flex": 5,
+                  "margin": "md",
+                  "align": "start"
+                }
+              ],
+              "spacing": "sm"
             },
             {
               "type": "box",
-              "layout": "horizontal",
+              "layout": "vertical",
+              "margin": "lg",
+              "spacing": "sm",
               "contents": [
-                { "type": "text", "text": "เวลา", "color": "#aaaaaa", "size": "sm", "flex": 1 },
-                { "type": "text", "text": new Date().toLocaleString('th-TH'), "wrap": true, "color": "#666666", "size": "sm", "flex": 4 }
+                {
+                  "type": "box",
+                  "layout": "horizontal",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "สถานะ:",
+                      "size": "sm",
+                      "color": "#555555",
+                      "flex": 2
+                    },
+                    {
+                      "type": "text",
+                      "text": status, // สถานะการลงเวลา
+                      "size": "sm",
+                      "color": "#111111",
+                      "flex": 5,
+                      "wrap": true
+                    }
+                  ]
+                },
+                {
+                  "type": "box",
+                  "layout": "horizontal",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "เวลา:",
+                      "size": "sm",
+                      "color": "#555555",
+                      "flex": 2
+                    },
+                    {
+                      "type": "text",
+                      "text": new Date().toLocaleString('th-TH'), // เวลาที่ลง
+                      "size": "sm",
+                      "color": "#111111",
+                      "flex": 5,
+                      "wrap": true
+                    }
+                  ]
+                },
+                {
+                  "type": "box",
+                  "layout": "horizontal",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "ระยะห่าง:",
+                      "size": "sm",
+                      "color": "#555555",
+                      "flex": 2
+                    },
+                    {
+                      "type": "text",
+                      "text": `${Math.round(distance)} เมตร`, // ระยะห่างจากออฟฟิศ
+                      "size": "sm",
+                      "color": "#111111",
+                      "flex": 5,
+                      "wrap": true
+                    }
+                  ]
+                }
               ]
             }
           ]
+        },
+        "footer": {
+          "type": "box",
+          "layout": "vertical",
+          "spacing": "sm",
+          "contents": [
+            {
+              "type": "button",
+              "style": "link",
+              "height": "sm",
+              "action": {
+                "type": "uri",
+                "label": "ดูรายงานทั้งหมด",
+                "uri": "ใส่_ลิงก์_Google_Sheet_Report_ของคุณ_ที่นี่" // ลิงก์ไปยัง Google Sheet ที่ดูข้อมูลได้
+              }
+            },
+            {
+              "type": "spacer",
+              "size": "sm"
+            }
+          ],
+          "flex": 0
         }
-      ]
-    }
-  }
-};
+      }
+    };
 
         try {
           
@@ -186,6 +274,7 @@ main();
 </script>
 </body>
 </html>
+
 
 
 
