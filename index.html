@@ -84,14 +84,16 @@ async function processAttendance(status) {
       const uLat = pos.coords.latitude;
       const uLng = pos.coords.longitude;
       const distance = getDistance(uLat, uLng, OFFICE_LAT, OFFICE_LNG);
-// 2. ตรวจสอบระยะทาง
-      if (distance > ALLOWED_DISTANCE) {
-        alert(`คุณอยู่นอกพื้นที่บริษัท! (ระยะห่าง ${Math.round(distance)} ม.)`);
-        msgEl.innerText = "ลงเวลาไม่สำเร็จ: นอกพื้นที่";
-        return;
-      }
+      const roundedDistance = Math.round(distance);
 
-      
+            // --- ตรวจสอบเงื่อนไขระยะทาง ---
+            if (distance > ALLOWED_DISTANCE) {
+                msgEl.innerText = "นอกพื้นที่!";
+                alert(`❌ บันทึกไม่สำเร็จ!\nคุณอยู่ห่างจากบริษัท ${roundedDistance} เมตร\n(ต้องอยู่ในระยะไม่เกิน ${ALLOWED_DISTANCE} เมตร)`);
+                return; // หยุดการทำงานทันที ไม่ส่งข้อมูลไป GAS และไม่ส่ง Flex
+            }
+
+      msgEl.innerText = "พิกัดถูกต้อง กำลังบันทึกข้อมูล...";
       const profile = await liff.getProfile();
       const context = liff.getContext();
       
@@ -273,6 +275,7 @@ main();
 </script>
 </body>
 </html>
+
 
 
 
