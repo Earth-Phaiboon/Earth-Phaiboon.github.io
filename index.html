@@ -25,30 +25,29 @@
 </div>
 
 <script>
-const LIFF_ID =  '2008726712-TyWc8pGY';//ใส่_LIFF_ID_ที่นี่
+const LIFF_ID =  '2008726712-TyWc8pGY';//ใส่_LIFF_ID_ที่นี่ 2008726712-MxmzeBoq
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyJ-HTw8SXHedy0TqVs_rHVESdzijhRAnKWxC1zdtOMPvpKTX7jOBhfSPYaRX6NbbXkcA/exec';//ใส่_GAS_URL_ที่นี่
-const OFFICE_LAT = 16.4409792; // ใส่ละติจูดบริษัท
-const OFFICE_LNG = 100.2679006; // ใส่ลองจิจูดบริษัท
-const ALLOWED_DISTANCE = 200; // อนุญาตในรัศมี 200 เมตร
+const OFFICE_LAT = 16.822344; // ใส่ละติจูดบริษัท  ,16.822344, 100.267593
+const OFFICE_LNG = 100.267593; // ใส่ลองจิจูดบริษัท
+const ALLOWED_DISTANCE = 10; // อนุญาตในรัศมี 200 เมตร
 
 async function main() {
   try {
     await liff.init({ liffId: LIFF_ID });
-
-    // ใส่ต่อจาก liff.init ...
-      if (liff.isLoggedIn()) {
-        const context = liff.getContext();
-        // เช็กว่าเปิดในกลุ่มหรือไม่
-        if (context.type === 'group') {
-           alert("📌 Group ID ของห้องนี้คือ:\n" + context.groupId);
-        } else if (context.type === 'room') {
-           alert("📌 Room ID ของห้องนี้คือ:\n" + context.roomId);
-        } else {
-           // ถ้าเปิดแชทส่วนตัว จะได้ User ID แทน
-           console.log("User ID: " + context.userId);
-        }
-      }
-
+      
+  // ใส่ต่อจาก liff.init ...
+if (liff.isLoggedIn()) {
+  const context = liff.getContext();
+  // เช็กว่าเปิดในกลุ่มหรือไม่
+  if (context.type === 'group') {
+     alert("📌 Group ID ของห้องนี้คือ:\n" + context.groupId);
+  } else if (context.type === 'room') {
+     alert("📌 Room ID ของห้องนี้คือ:\n" + context.roomId);
+  } else {
+     // ถ้าเปิดแชทส่วนตัว จะได้ User ID แทน
+     console.log("User ID: " + context.userId);
+  }
+}
 
     
     // ตรวจสอบว่ามี Token ที่ใช้งานได้จริงไหม
@@ -109,6 +108,7 @@ async function processAttendance(status) {
                 return; // หยุดการทำงานทันที ไม่ส่งข้อมูลไป GAS และไม่ส่ง Flex
             }
             */
+            
       msgEl.innerText = "พิกัดถูกต้อง กำลังบันทึกข้อมูล...";
       const profile = await liff.getProfile();
       const context = liff.getContext();
@@ -291,6 +291,15 @@ main();
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
 
 
 
