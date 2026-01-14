@@ -35,10 +35,20 @@ async function main() {
   try {
     await liff.init({ liffId: LIFF_ID });
 
-const context = liff.getContext();
-if (context.type === 'group') {
-   alert("นี่คือ Group ID ของห้องนี้ครับ (จดไว้): " + context.groupId);
-}
+    // ใส่ต่อจาก liff.init ...
+      if (liff.isLoggedIn()) {
+        const context = liff.getContext();
+        // เช็กว่าเปิดในกลุ่มหรือไม่
+        if (context.type === 'group') {
+           alert("📌 Group ID ของห้องนี้คือ:\n" + context.groupId);
+        } else if (context.type === 'room') {
+           alert("📌 Room ID ของห้องนี้คือ:\n" + context.roomId);
+        } else {
+           // ถ้าเปิดแชทส่วนตัว จะได้ User ID แทน
+           console.log("User ID: " + context.userId);
+        }
+      }
+
 
     
     // ตรวจสอบว่ามี Token ที่ใช้งานได้จริงไหม
@@ -281,6 +291,7 @@ main();
 </script>
 </body>
 </html>
+
 
 
 
