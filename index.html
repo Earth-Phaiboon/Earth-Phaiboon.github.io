@@ -34,14 +34,29 @@ const ALLOWED_DISTANCE = 10; // อนุญาตในรัศมี 200 เ�
 async function main() {
   try {
     await liff.init({ liffId: LIFF_ID });
-      
-
-
-    
     // ตรวจสอบว่ามี Token ที่ใช้งานได้จริงไหม
     if (!liff.isLoggedIn()) {
       liff.login();
     } else {
+//test
+// --- ส่วนที่เพิ่มใหม่สำหรับดึง ID ---
+      const context = liff.getContext();
+      
+      // ตรวจสอบว่าเปิดจาก Context ไหน
+      if (context && context.groupId) {
+        // ถ้าอยู่ในกลุ่ม จะเด้ง Alert บอก Group ID
+        alert("📌 พบ Group ID: " + context.groupId);
+        console.log("Group ID:", context.groupId);
+      } else if (context && context.roomId) {
+        // ถ้าอยู่ในห้องแชทไม่มีชื่อ
+        alert("📌 พบ Room ID: " + context.roomId);
+      } else {
+        // ถ้าเปิดในแชทส่วนตัว หรือเปิดจาก Browser นอก LINE
+        console.log("ไม่ได้เปิดจากกลุ่ม (Context Type: " + context.type + ")");
+      }
+      // ---------------------------------
+//End test
+      
       try {
         const profile = await liff.getProfile();
         document.getElementById('userName').innerText = "สวัสดี " + profile.displayName;
@@ -279,6 +294,7 @@ main();
 </script>
 </body>
 </html>
+
 
 
 
