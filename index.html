@@ -276,40 +276,50 @@ async function processAttendance(status) {
   }
 }
 // ฟังก์ชันสำหรับลงทะเบียน
+// ฟังก์ชันสำหรับลงทะเบียน
 async function processRegistration() {
   const msgEl = document.getElementById('status-msg');
-  msgEl.innerText = "กำลังลงทะเบียน...";
+  msgEl.innerText = "กำลังตรวจสอบข้อมูล...";
 
   try {
     const profile = await liff.getProfile();
     
-    // สร้างชุดข้อมูลสำหรับลงทะเบียน (แยก action ให้ชัดเจน)
     const payload = {
-      action: "register", // 🎯 บอกให้ Google Script รู้ว่านี่คือการลงทะเบียน
+      action: "register", 
       userId: profile.userId,
       displayName: profile.displayName
     };
 
-    // ส่งข้อมูลไปที่ GAS_URL เดิมของคุณ
-    await fetch(GAS_URL, {
+    // ส่งข้อมูลไปที่ Google Script
+    const response = await fetch(GAS_URL, {
       method: "POST",
-      body: JSON.stringify(payload),
-      mode: 'no-cors' // ใช้ no-cors เหมือนโค้ดเดิมของคุณเพื่อเลี่ยงปัญหาจุกจิก
+      body: JSON.stringify(payload)
+      // 🎯 เอา mode: 'no-cors' ออกแล้ว เพื่อให้มันรับค่า JSON กลับมาได้
     });
 
-    msgEl.innerText = "ลงทะเบียนสำเร็จ!";
-    
-    // โชว์แจ้งเตือนให้พนักงานก๊อปปี้ ID หรือรู้ตัวว่าสำเร็จแล้ว
-    alert(`ลงทะเบียนสำเร็จ!\nชื่อไลน์: ${profile.displayName}\nรหัสของคุณคือ: ${profile.userId}`);
+    // อ่านข้อความที่เซิร์ฟเวอร์ตอบกลับมา
+    const result = await response.json();
+
+    // เช็คสถานะที่ได้กลับมา
+    if (result.status === "duplicate") {
+      msgEl.innerText = "คุณได้ลงทะเบียนไว้แล้ว";
+      alert("พบการลงทะเบียนไปแล้ว!\nรหัสของคุณคือ: " + profile.userId);
+      
+    } else if (result.status === "success") {
+      msgEl.innerText = "ลงทะเบียนสำเร็จ!";
+      alert("ลงทะเบียนสำเร็จ!\nชื่อไลน์: " + profile.displayName + "\nรหัสของคุณคือ: " + profile.userId);
+    }
     
   } catch (err) {
     alert("เกิดข้อผิดพลาดในการลงทะเบียน: " + err.message);
+    msgEl.innerText = "ลงทะเบียนไม่สำเร็จ";
   }
 }
 main();
 </script>
 </body>
 </html>
+
 
 
 
